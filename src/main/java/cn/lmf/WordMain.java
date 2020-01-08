@@ -63,7 +63,8 @@ public class WordMain {
 
     public static void createHeading(XWPFDocument document, String style, String content, BreakType breakType,int level) {
         XWPFParagraph paragraph = document.createParagraph();
-        paragraph.setNumID(BigInteger.valueOf(1));
+        BigInteger numId = getNumId(document);
+        paragraph.setNumID(numId);
         CTDecimalNumber ctDecimalNumber = paragraph.getCTP().getPPr().getNumPr().addNewIlvl();
         ctDecimalNumber.setVal(BigInteger.valueOf(level));
         System.out.println(paragraph.getNumIlvl());
@@ -76,14 +77,15 @@ public class WordMain {
     }
 
     public static void createForeword(XWPFDocument document) {
-        createHeading(document, "Heading1", "前言", BreakType.PAGE,0);
-        createHeading(document,"Heading2","编写目的",BreakType.TEXT_WRAPPING,1);
-        createHeading(document,"Heading2","名词解释",BreakType.TEXT_WRAPPING,1);
+        //2代表一级标题heading1，以此类推
+        createHeading(document, "2", "前言", BreakType.PAGE,0);
+        createHeading(document,"3","编写目的",BreakType.TEXT_WRAPPING,1);
+        createHeading(document,"3","名词解释",BreakType.TEXT_WRAPPING,1);
 
     }
 
     public static void createOverview(XWPFDocument document) {
-        createHeading(document, "Heading1", "概述", BreakType.PAGE,0);
+        createHeading(document, "2", "概述", BreakType.PAGE,0);
     }
 
     public static void createMainPage(XWPFDocument document) {
@@ -150,6 +152,33 @@ public class WordMain {
         jc.setVal(en);
     }
 
-    public static BigInteger getNumId()
+    public static BigInteger getNumId(XWPFDocument document){
+        CTAbstractNum cTAbstractNum = CTAbstractNum.Factory.newInstance();
+        cTAbstractNum.setAbstractNumId(BigInteger.valueOf(0));
+
+        /*first level*/
+        CTLvl cTLvl0 = cTAbstractNum.addNewLvl();               //create the first numbering level
+        cTLvl0.setIlvl(BigInteger.ZERO);                        //mark it as the top outline level
+        cTLvl0.addNewNumFmt().setVal(STNumberFormat.DECIMAL);   //set the number format
+        cTLvl0.addNewLvlText().setVal("%1.");                   //set the adornment; %1 is the first-level number or letter as set by number format
+        cTLvl0.addNewStart().setVal(BigInteger.ONE);            //set the starting number (here, index from 1)
+//        cTLvl0.addNewSuff().setVal(STLevelSuffix.SPACE);        //set space between number and text
+
+        /*second level*/
+        CTLvl cTLvl1 = cTAbstractNum.addNewLvl();               //create another numbering level
+        cTLvl1.setIlvl(BigInteger.ONE);                         //specify that it's the first indent
+        CTInd ctInd = cTLvl1.addNewPPr().addNewInd();           //add an indent
+//        ctInd.setLeft(inchesToTwips(.5));                       //set a half-inch indent
+        cTLvl1.addNewNumFmt().setVal(STNumberFormat.DECIMAL);   //the rest is fairly similar
+        cTLvl1.addNewLvlText().setVal("%1.%2.");                //setup to get 1.1, 1.2, ect.
+        cTLvl1.addNewStart().setVal(BigInteger.ONE);
+//        cTLvl1.addNewSuff().setVal(STLevelSuffix.SPACE);
+
+        /*associate the numbering scheme with the document's numbering*/
+        XWPFAbstractNum abstractNum = new XWPFAbstractNum(cTAbstractNum);
+        XWPFNumbering numbering = document.createNumbering();
+        BigInteger abstractNumID = numbering.addAbstractNum(abstractNum);
+        return numbering.addNum(abstractNumID);
+    }
 
 }
