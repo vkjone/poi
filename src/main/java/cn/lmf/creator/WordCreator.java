@@ -1,30 +1,18 @@
-package cn.lmf;
+package cn.lmf.creator;
 
+import cn.lmf.ResolveJson;
 import cn.lmf.entity.DocEntity;
+import cn.lmf.util.DateUtil;
 import org.apache.poi.wp.usermodel.HeaderFooterType;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
-import javax.print.Doc;
 import java.io.*;
 import java.math.BigInteger;
 
-public class WordMain {
-    /**
-     * word整体样式
-     */
+public class WordCreator {
     private static CTStyles wordStyles = null;
-
-    private static final String HEADING1 = "Heading1";
-    private static final String HEADING2 = "Heading2";
-    private static final String HEADING3 = "Heading3";
-    private static final String HEADING4 = "Heading4";
-
-    private DocEntity docEntity;
-    /**
-     * Word整体样式
-     */
     static {
         XWPFDocument template;
         try {
@@ -40,96 +28,63 @@ public class WordMain {
             e.printStackTrace();
         }
     }
+    private static final String HEADING1 = "Heading1";
+    private static final String HEADING2 = "Heading2";
+    private static final String HEADING3 = "Heading3";
+    private static final String HEADING4 = "Heading4";
 
-    public static void main(String[] args) throws IOException {
+    private DocEntity docEntity;
+    private XWPFDocument document;
 
-        XWPFDocument document = new XWPFDocument();
+    public WordCreator(DocEntity docEntity) {
+        this.docEntity = docEntity;
+        this.document = new XWPFDocument();
+    }
+
+    public void create() throws IOException {
         XWPFStyles styles = document.createStyles();
         styles.setStyles(wordStyles);
-        FileOutputStream out = new FileOutputStream(new File("demoDocument.docx"));
-        DocEntity entity = ResolveJson.resovle();
+
+        //定义页眉页脚
+        createHeaderFooter();
         //首页
-        createMainPage(document);
+        createMainPage();
+        //修改历史表
+        createChangeHistoryTable();
+        //前言
+        createForeword();
+        //概述
+        createOverview();
+        //API信息，实现方案
+        createApiInfos();
 
-        createChangeHistoryTable(document);
+        FileOutputStream out = new FileOutputStream(new File("demoDocument.docx"));
+        document.write(out);
+        out.close();
+    }
 
-        createForeword(document);
-
-        createOverview(document);
-
-        createApiInfos(document,entity);
-
+    private void createHeaderFooter() {
         XWPFHeader header = document.createHeader(HeaderFooterType.DEFAULT);
         header.createParagraph().insertNewRun(0).setText("中国移动物联网API服务平台需求规格说明书");
         XWPFFooter footer = document.createFooter(HeaderFooterType.DEFAULT);
         //TODO 日期，页码
         XWPFRun footerRun = footer.createParagraph().insertNewRun(0);
-        footerRun.setText("2020-01-07         第");
+        footerRun.setText(DateUtil.getCurrentDate("yyyy-MM-dd") + "         第");
         footerRun.getCTR().addNewPgNum();
         footerRun.setText("页");
-        document.write(out);
-        out.close();
-        System.out.println("success");
     }
 
-    public static void createHeading(XWPFDocument document, String style, String content,int level) {
-        XWPFParagraph paragraph = document.createParagraph();
-        BigInteger numId = getNumId(document);
-        paragraph.setNumID(numId);
-        CTDecimalNumber ctDecimalNumber = paragraph.getCTP().getPPr().getNumPr().addNewIlvl();
-        ctDecimalNumber.setVal(BigInteger.valueOf(level));
-        System.out.println(paragraph.getNumIlvl());
-        System.out.println(paragraph.getNumID());
-        paragraph.setStyle(style);
-        paragraph.setAlignment(ParagraphAlignment.LEFT);
-        XWPFRun run = paragraph.createRun();
-        run.setText(content);
-    }
-
-    public static void createForeword(XWPFDocument document) {
-        //2代表一级标题heading1，以此类推
-        createHeading(document, HEADING1, "前言",0);
-        createHeading(document,HEADING2,"编写目的",1);
-        createHeading(document,HEADING2,"名词解释",1);
-
-    }
-
-    public static void createOverview(XWPFDocument document) {
-        createHeading(document, HEADING1, "概述",0);
-    }
-
-    public static void createApiInfos(XWPFDocument document,DocEntity docEntity){
-        createHeading(document,HEADING1,"实现方案",0);
-        createHeading(document,HEADING2,"CMIOT_API35T00-全国在网用户数查询",1);
-        createHeading(document,"Heading3","需求来源",2);
-        createText(document,docEntity,BreakType.TEXT_WRAPPING);
-        createHeading(document,"Heading3","业务说明",2);
-        createText(document,docEntity,BreakType.TEXT_WRAPPING);
-    }
-
-    public static void createText(XWPFDocument document,DocEntity docEntity,BreakType breakType){
-        XWPFParagraph paragraph = document.createParagraph();
-        paragraph.setAlignment(ParagraphAlignment.LEFT);
-        XWPFRun run = paragraph.createRun();
-        run.setText("北京省公司");
-        run.addBreak(breakType);
-    }
-
-    public static void createMainPage(XWPFDocument document) {
+    private void createMainPage() {
         XWPFParagraph paragraph = document.createParagraph();
         paragraph.setAlignment(ParagraphAlignment.CENTER);
-        System.out.println(paragraph.getSpacingAfter());
-        System.out.println(paragraph.getSpacingAfterLines());
-        paragraph.setSpacingAfterLines(2000);
-        System.out.println(paragraph.getSpacingAfter());
-        System.out.println(paragraph.getSpacingAfterLines());
+        paragraph.setSpacingAfterLines(3000);
         XWPFRun run = paragraph.createRun();
         run.setFontFamily("SimSun");
         run.setFontSize(26);
         run.setBold(true);
         run.setText("中移物联网智能连接部");
         run.addBreak();
-        run.setText("API服务平台V5.2.1");
+        run.setText("API服务平台V" + docEntity.getVersion());
         run.addBreak();
         run.setText("全国在网用户数查询");
         run.addBreak();
@@ -142,11 +97,11 @@ public class WordMain {
         tailRun.setFontSize(20);
         tailRun.setText("中移物联网有限公司");
         tailRun.addBreak();
-        tailRun.setText("2020年1月");
+        tailRun.setText(DateUtil.getCurrentDate("yyyy-MM"));
         tailRun.addBreak(BreakType.PAGE);
     }
 
-    public static void createChangeHistoryTable(XWPFDocument document) {
+    private void createChangeHistoryTable() {
         XWPFTable tab = document.createTable(5, 4);
         setTableAlign(tab, ParagraphAlignment.CENTER);
 //        XWPFNumbering numbering = document.getNumbering();
@@ -162,24 +117,63 @@ public class WordMain {
         }
 
         row = tab.getRow(1); // Second Row
-        row.getCell(0).setText("1.");
-        row.getCell(1).setText("Irfan");
-        row.getCell(2).setText("irfan@gmail.com");
-        row = tab.getRow(2); // Third Row
-        row.getCell(0).setText("2.");
-        row.getCell(1).setText("Mohan");
-        row.getCell(2).setText("mohan@gmail.com");
+        row.getCell(0).setText(docEntity.getVersion());
+        row.getCell(1).setText(DateUtil.getCurrentDate("yyyy/MM/dd"));
+        row.getCell(2).setText(docEntity.getAuthor());
+//        row = tab.getRow(2); // Third Row
+//        row.getCell(0).setText("2.");
+//        row.getCell(1).setText("Mohan");
+//        row.getCell(2).setText("mohan@gmail.com");
     }
 
+    private void createForeword() {
+        //2代表一级标题heading1，以此类推
+        createHeading(HEADING1, "前言", 0);
+        createHeading(HEADING2, "编写目的", 1);
+        createHeading(HEADING2, "名词解释", 1);
 
-    public static void setTableAlign(XWPFTable table, ParagraphAlignment align) {
+    }
+
+    private void createOverview() {
+        createHeading(HEADING1, "概述", 0);
+    }
+
+    private void createApiInfos() {
+        createHeading(HEADING1, "实现方案", 0);
+        createHeading(HEADING2, "CMIOT_API35T00-全国在网用户数查询", 1);
+        createHeading(HEADING3, "需求来源", 2);
+        createText();
+        createHeading(HEADING3, "业务说明", 2);
+        createText();
+    }
+
+    private void createText() {
+        XWPFParagraph paragraph = document.createParagraph();
+        paragraph.setAlignment(ParagraphAlignment.LEFT);
+        XWPFRun run = paragraph.createRun();
+        run.setText("北京省公司");
+    }
+
+    private void setTableAlign(XWPFTable table, ParagraphAlignment align) {
         CTTblPr tblPr = table.getCTTbl().getTblPr();
         CTJc jc = (tblPr.isSetJc() ? tblPr.getJc() : tblPr.addNewJc());
         STJc.Enum en = STJc.Enum.forInt(align.getValue());
         jc.setVal(en);
     }
 
-    public static BigInteger getNumId(XWPFDocument document){
+    private void createHeading(String style, String content, int level) {
+        XWPFParagraph paragraph = document.createParagraph();
+        BigInteger numId = getNumId(document);
+        paragraph.setNumID(numId);
+        CTDecimalNumber ctDecimalNumber = paragraph.getCTP().getPPr().getNumPr().addNewIlvl();
+        ctDecimalNumber.setVal(BigInteger.valueOf(level));
+        paragraph.setStyle(style);
+        paragraph.setAlignment(ParagraphAlignment.LEFT);
+        XWPFRun run = paragraph.createRun();
+        run.setText(content);
+    }
+
+    private BigInteger getNumId(XWPFDocument document) {
         CTAbstractNum cTAbstractNum = CTAbstractNum.Factory.newInstance();
         cTAbstractNum.setAbstractNumId(BigInteger.valueOf(0));
 
@@ -194,7 +188,7 @@ public class WordMain {
         /*second level*/
         CTLvl cTLvl1 = cTAbstractNum.addNewLvl();               //create another numbering level
         cTLvl1.setIlvl(BigInteger.ONE);                         //specify that it's the first indent
-        CTInd ctInd = cTLvl1.addNewPPr().addNewInd();           //add an indent
+//        CTInd ctInd = cTLvl1.addNewPPr().addNewInd();           //add an indent
 //        ctInd.setLeft(inchesToTwips(.5));                       //set a half-inch indent
         cTLvl1.addNewNumFmt().setVal(STNumberFormat.DECIMAL);   //the rest is fairly similar
         cTLvl1.addNewLvlText().setVal("%1.%2.");                //setup to get 1.1, 1.2, ect.
@@ -204,7 +198,7 @@ public class WordMain {
         /*thrid level*/
         CTLvl cTLvl2 = cTAbstractNum.addNewLvl();               //create another numbering level
         cTLvl2.setIlvl(BigInteger.valueOf(2));                         //specify that it's the first indent
-        CTInd ctInd2 = cTLvl2.addNewPPr().addNewInd();           //add an indent
+//        CTInd ctInd2 = cTLvl2.addNewPPr().addNewInd();           //add an indent
 //        ctInd.setLeft(inchesToTwips(.5));                       //set a half-inch indent
         cTLvl2.addNewNumFmt().setVal(STNumberFormat.DECIMAL);   //the rest is fairly similar
         cTLvl2.addNewLvlText().setVal("%1.%2.%3.");                //setup to get 1.1.1, 1.2.1, ect.
