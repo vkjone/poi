@@ -32,7 +32,7 @@ public class ResolveJson {
                 "    \"demandSource\": \"北京省公司\",\n" +
                 "    \"description\": \"省公司可以通过该接口查询全国在网物联卡用户数（除已销户的所有OneLink-PB和OneLink-CT的物联卡总数）\",\n" +
                 "    \"rules\": [\"该接口面向所有省公司客户\"],\n" +
-                "    \"function\": {\n" +
+                "    \"apiFunction\": {\n" +
                 "      \"apiUrl\": \"pr/query/national-user-total\",\n" +
                 "      \"requestMethod\": \"POST/GET\",\n" +
                 "      \"requestParams\": [{\n" +

@@ -1,6 +1,8 @@
 package cn.lmf.creator;
 
 import cn.lmf.ResolveJson;
+import cn.lmf.entity.ApiFunction;
+import cn.lmf.entity.ApiInfo;
 import cn.lmf.entity.DocEntity;
 import cn.lmf.util.DateUtil;
 import org.apache.poi.wp.usermodel.HeaderFooterType;
@@ -101,6 +103,21 @@ public class WordCreator {
         tailRun.addBreak(BreakType.PAGE);
     }
 
+    private void createParamTable(){
+        //TODO 根据参数个数确认表格大小
+        XWPFTable tab = document.createTable();
+        setTableAlign(tab, ParagraphAlignment.CENTER);
+        tab.setCellMargins(200, 200, 200, 200);
+        XWPFTableRow row = tab.getRow(0);
+        //TODO 设置单元格宽度
+        row.getCell(0).setText("参数");
+        row.createCell().setText("是否必须");
+        row.createCell().setText("默认值");
+        row.createCell().setText("含义");
+
+        row.createCell();
+    }
+
     private void createChangeHistoryTable() {
         XWPFTable tab = document.createTable(5, 4);
         setTableAlign(tab, ParagraphAlignment.CENTER);
@@ -140,18 +157,37 @@ public class WordCreator {
 
     private void createApiInfos() {
         createHeading(HEADING1, "实现方案", 0);
-        createHeading(HEADING2, "CMIOT_API35T00-全国在网用户数查询", 1);
-        createHeading(HEADING3, "需求来源", 2);
-        createText();
-        createHeading(HEADING3, "业务说明", 2);
-        createText();
+        for(ApiInfo apiInfo:docEntity.getApiInfos()){
+            createHeading(HEADING2, "CMIOT_API"+apiInfo.getApiCode()+"-"+apiInfo.getApiName(), 1);
+            createHeading(HEADING3, "需求来源", 2);
+            createText(apiInfo.getDemandSource());
+            createHeading(HEADING3, "业务说明", 2);
+            createText(apiInfo.getDescription());
+            createHeading(HEADING3,"业务规则",2);
+            for(String rule:apiInfo.getRules()){
+                createText(rule);
+            }
+            createHeading(HEADING3,"业务模型",2);
+            //TODO 实现业务模型
+            createHeading(HEADING3,"业务功能",2);
+            ApiFunction apiFunction = apiInfo.getApiFunction();
+            createHeading(HEADING4,"接口服务地址",3);
+            createText(apiFunction.getApiUrl());
+            createHeading(HEADING4,"请求方式",3);
+            createText(apiFunction.getRequestMethod());
+            createHeading(HEADING4,"请求参数说明",3);
+            createText("公共请求参数");
+            createParamTable();
+
+        }
     }
 
-    private void createText() {
+    //包装几个可以设置颜色，字体，加粗，斜体的
+    private void createText(String text) {
         XWPFParagraph paragraph = document.createParagraph();
         paragraph.setAlignment(ParagraphAlignment.LEFT);
         XWPFRun run = paragraph.createRun();
-        run.setText("北京省公司");
+        run.setText(text);
     }
 
     private void setTableAlign(XWPFTable table, ParagraphAlignment align) {
