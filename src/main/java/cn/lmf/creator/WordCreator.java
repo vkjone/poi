@@ -106,14 +106,24 @@ public class WordCreator {
     private void createParamTable(){
         //TODO 根据参数个数确认表格大小
         XWPFTable tab = document.createTable();
+        tab.setTableAlignment(TableRowAlign.CENTER);
+        tab.setWidth(5*1440);
         setTableAlign(tab, ParagraphAlignment.CENTER);
         tab.setCellMargins(200, 200, 200, 200);
         XWPFTableRow row = tab.getRow(0);
-        //TODO 设置单元格宽度
+        //TODO 设置单元格宽度 单元格文字居中
         row.getCell(0).setText("参数");
         row.createCell().setText("是否必须");
         row.createCell().setText("默认值");
+//        XWPFParagraph paragraph = document.createParagraph();
+//        paragraph.setAlignment(ParagraphAlignment.CENTER);
+//        XWPFRun run = paragraph.createRun();
+//        run.setText("含义");
         row.createCell().setText("含义");
+
+        CTTblWidth tblWidth = tab.getRow(0).getCell(3).getCTTc().addNewTcPr().addNewTcW();
+        tblWidth.setW(BigInteger.valueOf(2*1440));
+        tblWidth.setType(STTblWidth.DXA);
 
         row.createCell();
     }
