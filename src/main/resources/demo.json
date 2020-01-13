@@ -3,10 +3,11 @@
   "author": "lmf",
   "foreword": {
     "purpose": "该文档xxxx",
-    "nounExplains": [{
-      "noun": "token",
-      "explain": "令牌"
-    },
+    "nounExplains": [
+      {
+        "noun": "token",
+        "explain": "令牌"
+      },
       {
         "noun": "transid",
         "explain": "业务编码"
@@ -18,35 +19,47 @@
     "background": "这里填写需求背景",
     "userType": "省公司"
   },
-  "apiInfos": [{
-    "apiCode": "35T00",
-    "apiName": "全国在网用户数查询",
-    "demandSource": "北京省公司",
-    "description": "省公司可以通过该接口查询全国在网物联卡用户数（除已销户的所有OneLink-PB和OneLink-CT的物联卡总数）",
-    "rules": ["该接口面向所有省公司客户"],
-    "apiFunction": {
-      "apiUrl": "pr/query/national-user-total",
-      "requestMethod": "POST/GET",
-      "requestParams": [{
-        "name": "msisdn",
-        "required": true,
-        "defaultValue": "",
-        "detail": "一种卡号"
-      },
-        {
-          "name": "date",
-          "required": "false",
-          "default": "",
-          "detail": "日期"
-        }
+  "apiInfos": [
+    {
+      "apiCode": "35T00",
+      "apiName": "全国在网用户数查询",
+      "demandSource": "北京省公司",
+      "description": "省公司可以通过该接口查询全国在网物联卡用户数（除已销户的所有OneLink-PB和OneLink-CT的物联卡总数）",
+      "rules": [
+        "该接口面向所有省公司客户"
       ],
-
-      "responseParams": [{
-        "name": "totalCount",
-        "required": "true",
-        "default": "",
-        "detail": "全国在网用户数"
-      }]
+      "apiFunction": {
+        "apiUrl": "pr/query/national-user-total",
+        "requestMethod": "POST/GET",
+        "requestParams": [
+          {
+            "name": "msisdn",
+            "required": true,
+            "defaultValue": "",
+            "detail": "一种卡号"
+          },
+          {
+            "name": "date",
+            "required": "false",
+            "default": "",
+            "detail": "日期"
+          }
+        ],
+        "responseParams": [
+          {
+            "name": "totalCount",
+            "required": "true",
+            "default": "",
+            "detail": "全国在网用户数"
+          }
+        ],
+        "successResponseExample": [
+          "{\"status\":\"0\",\"message\":\"正确\",\"result\":[{\"totalCount\":\"125687952\"}]}"
+        ],
+        "failResponseExample": [
+          "{\n\t\"message\": \"TOKEN不存在或已过期，请重新获取\",\n\t\"result\": [],\n\t\"status\": \"12021\"\n}"
+        ]
+      }
     }
-  }]
+  ]
 }

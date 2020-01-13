@@ -7,6 +7,8 @@ public class ApiFunction {
     String requestMethod;
     List<ParamInfo> requestParams;
     List<ParamInfo> responseParams;
+    List<String> successResponseExample;
+    List<String> failResponseExample;
 
     public String getApiUrl() {
         return apiUrl;
@@ -38,5 +40,21 @@ public class ApiFunction {
 
     public void setResponseParams(List<ParamInfo> responseParams) {
         this.responseParams = responseParams;
+    }
+
+    public List<String> getSuccessResponseExample() {
+        return successResponseExample;
+    }
+
+    public void setSuccessResponseExample(List<String> successResponseExample) {
+        this.successResponseExample = successResponseExample;
+    }
+
+    public List<String> getFailResponseExample() {
+        return failResponseExample;
+    }
+
+    public void setFailResponseExample(List<String> failResponseExample) {
+        this.failResponseExample = failResponseExample;
     }
 }
