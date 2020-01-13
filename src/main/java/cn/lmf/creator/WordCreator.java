@@ -111,12 +111,12 @@ public class WordCreator {
     }
 
     private void createParamTable(List<ParamInfo> paramInfoList) {
-        XWPFTable tab = document.createTable(paramInfoList.size()+1, 4);
+        XWPFTable tab = document.createTable(paramInfoList.size() + 1, 4);
         setTableAlign(tab, ParagraphAlignment.CENTER);
         tab.setCellMargins(50, 200, 50, 200);
 
         XWPFTableRow row = tab.getRow(0);
-        for(int i=0;i<4;i++){
+        for (int i = 0; i < 4; i++) {
             XWPFTableCell cell = row.getCell(i);
             XWPFParagraph paragraph = cell.getParagraphs().get(0);
             paragraph.setAlignment(ParagraphAlignment.CENTER);
@@ -142,7 +142,7 @@ public class WordCreator {
 
         for (int i = 1; i <= paramInfoList.size(); i++) {
             XWPFTableRow paramRow = tab.getRow(i);
-            ParamInfo paramInfo = paramInfoList.get(i-1);
+            ParamInfo paramInfo = paramInfoList.get(i - 1);
             paramRow.getCell(0).setText(paramInfo.getName());
             paramRow.getCell(1).setText(paramInfo.getRequired());
             paramRow.getCell(2).setText(paramInfo.getDefaultValue());
@@ -215,27 +215,33 @@ public class WordCreator {
             createParamTable(apiInfo.getApiFunction().getResponseParams());
 
             createHeading(HEADING4, "返回报文举例", 3);
+
+
             ObjectMapper objectMapper = new ObjectMapper();
-            String a = apiInfo.getApiFunction().getSuccessResponseExample().get(0);
-            System.out.println(a);
-
-            Object obj = objectMapper.readValue(a,Object.class);
-            String b = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-            createMultiLineText(b);
-
-//            createText(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj));
-            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj));
-
+            List<String> successResultList = apiInfo.getApiFunction().getSuccessResponseExample();
+            List<String> failResultList = apiInfo.getApiFunction().getFailResponseExample();
+            createText("成功：");
+            for (String successResult : successResultList) {
+                Object obj = objectMapper.readValue(successResult, Object.class);
+                String formatJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+                createMultiLineText(formatJson);
+            }
+            createText("失败：");
+            for (String failResult : failResultList) {
+                Object obj = objectMapper.readValue(failResult, Object.class);
+                String formatJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+                createMultiLineText(formatJson);
+            }
         }
     }
 
-    private void createMultiLineText(String content){
+    private void createMultiLineText(String content) {
         XWPFParagraph paragraph = document.createParagraph();
         paragraph.setAlignment(ParagraphAlignment.LEFT);
         XWPFRun run = paragraph.createRun();
         String[] lines = content.split("\n");
-        if(lines.length>0){
-            for (int i=0;i<lines.length;i++){
+        if (lines.length > 0) {
+            for (int i = 0; i < lines.length; i++) {
                 run.setText(lines[i]);
                 run.addBreak();
             }
@@ -298,7 +304,7 @@ public class WordCreator {
 //        ctInd.setLeft(inchesToTwips(.5));                       //set a half-inch indent
         cTLvl2.addNewNumFmt().setVal(STNumberFormat.DECIMAL);   //the rest is fairly similar
         cTLvl2.addNewLvlText().setVal("%1.%2.%3.");                //setup to get 1.1.1, 1.2.1, ect.
-        cTLvl2.addNewStart().setVal(BigInteger.valueOf(2));
+        cTLvl2.addNewStart().setVal(BigInteger.valueOf(1));
 
         /*associate the numbering scheme with the document's numbering*/
         XWPFAbstractNum abstractNum = new XWPFAbstractNum(cTAbstractNum);

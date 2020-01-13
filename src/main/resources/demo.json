@@ -54,12 +54,17 @@
           }
         ],
         "successResponseExample": [
-          "{\"status\":\"0\",\"message\":\"正确\",\"result\":[{\"totalCount\":\"125687952\"}]}"
+          "{\n  \"status\" : \"0\", \n  \"message\" : \"正确\", \n  \"result\" : [ { \n    \"totalCount\" : \"125687952\" \n  } ] \n}\n"
         ],
         "failResponseExample": [
           "{\n\t\"message\": \"TOKEN不存在或已过期，请重新获取\",\n\t\"result\": [],\n\t\"status\": \"12021\"\n}"
         ]
-      }
+      },
+      "privilege": ["仅限CT用户","仅限PB用户"],
+      "performanceRequirement": ["每个request响应时间<3s","每个request响应时间<5s"],
+      "securityRequirement": ["安全要求1","安全要求2"],
+      "compatibilityRequirements": [""],
+      "maintainabilityRequirements": [""]
     }
   ]
 }
